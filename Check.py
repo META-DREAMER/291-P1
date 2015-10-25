@@ -7,10 +7,11 @@
 import sys
 import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
+import gui.easygui as ui
 
 
 
-def createTable():
+def createTable(connection):
   
 
   # user = raw_input("Username [%s]: " % getpass.getuser())
@@ -18,11 +19,6 @@ def createTable():
   #   user=getpass.getuser()
   # get password
   # pw = getpass.getpass()
-
-  user = 'jutt'
-  pw = 'ps3hammad'
-
-  conString=''+user+'/' + pw +'@localhost:1525/crs'
 
   dropTables = ["drop table airline_agents","drop table bookings","drop table tickets","drop table passengers","drop table users","drop table flight_fares","drop table fares","drop table sch_flights","drop table flights","drop table airports"]
   createTables = ["create table airports (acode char(3), name char(30), city char(15), country char(15), tzone int, primary key (acode))",
@@ -37,10 +33,6 @@ def createTable():
           "create table airline_agents (email char(20),name char(20),primary key (email),foreign key (email) references users)"]
 
   try:
-    # Establish a connection in Python
-    connection = cx_Oracle.connect(conString)
-
-    # create a cursor 
     curs = connection.cursor()
     
 
@@ -58,7 +50,6 @@ def createTable():
 
     for cmd in data:
       curs.execute(cmd)
-
     connection.commit()
     curs.close()
     connection.close()
@@ -68,5 +59,31 @@ def createTable():
     print( sys.stderr, "Oracle code:", error.code)
     print( sys.stderr, "Oracle message:", error.message)
     
+def dbLogin():
+  msg = "Enter Oracle Connection Information"
+  title = "Conenct to Oracle"
+  fieldNames = ["Host", "Port", "SID","Username", "Password"]
+  fieldValues = ["localhost", "1525", "crs","jutt", "ps3hammad"]
+
+  while 1:
+    if fieldValues == None: break
+    errmsg = ""
+    for i in range(len(fieldNames)):
+      if fieldValues[i].strip() == "":
+        errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
+    fieldValues = ui.multpasswordbox(errmsg, title, fieldNames, fieldValues)
+    conString=''+fieldValues[3]+'/' + fieldValues[4] +'@'+fieldValues[0]+':'+fieldValues[1]+'/'+fieldValues[2]
+    if errmsg == "":
+      try:
+        print(3)
+        connection = cx_Oracle.connect(conString)
+        print(4)
+        return connection # no problems found
+      except cx_Oracle.DatabaseError as exc:
+        ui.exceptionbox()
+  
+
 if __name__ == "__main__":
-    createTable()
+    connection = dbLogin()
+    print(connection)
+    # createTable()
