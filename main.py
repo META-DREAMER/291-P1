@@ -139,4 +139,13 @@ if __name__ == "__main__":
   # createTable(connection)
   print(loginRegister(connection))
 
+  curs = connection.cursor()
+  select_statement1 = "select flightno, dep_date, src, dst, to_char(dep_time,'HH24:MI'), to_char(arr_time,'HH24:MI'), fare, seats, price from available_flights order by dep_date"
+
+  curs.execute(select_statement1)
+  rows = curs.fetchall()
+  for row in rows:
+    print(row)
+
+  curs.close()
   connection.close()
