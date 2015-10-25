@@ -12,13 +12,6 @@ import gui.easygui as ui
 
 
 def createTable(connection):
-  
-
-  # user = raw_input("Username [%s]: " % getpass.getuser())
-  # if not user:
-  #   user=getpass.getuser()
-  # get password
-  # pw = getpass.getpass()
 
   dropTables = ["drop table airline_agents","drop table bookings","drop table tickets","drop table passengers","drop table users","drop table flight_fares","drop table fares","drop table sch_flights","drop table flights","drop table airports"]
   createTables = ["create table airports (acode char(3), name char(30), city char(15), country char(15), tzone int, primary key (acode))",
@@ -35,12 +28,10 @@ def createTable(connection):
   try:
     curs = connection.cursor()
     
-
-    # datafile = 
     with open("data.sql", "r") as datafile:
-        data = []
-        for line in datafile:
-            data.append(line.replace('\n', '').replace(';', ''))
+      data = []
+      for line in datafile:
+          data.append(line.replace('\n', '').replace(';', ''))
 
     for cmd in dropTables:
       curs.execute(cmd)
@@ -52,12 +43,10 @@ def createTable(connection):
       curs.execute(cmd)
     connection.commit()
     curs.close()
-    connection.close()
+    
 
   except cx_Oracle.DatabaseError as exc:
-    error, = exc.args
-    print( sys.stderr, "Oracle code:", error.code)
-    print( sys.stderr, "Oracle message:", error.message)
+    ui.msgbox(exc.args[0],"Error")
     
 def dbLogin():
   msg = "Enter Oracle Connection Information"
@@ -66,24 +55,27 @@ def dbLogin():
   fieldValues = ["localhost", "1525", "crs","jutt", "ps3hammad"]
 
   while 1:
-    if fieldValues == None: break
     errmsg = ""
     for i in range(len(fieldNames)):
       if fieldValues[i].strip() == "":
         errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
     fieldValues = ui.multpasswordbox(errmsg, title, fieldNames, fieldValues)
+    if fieldValues == None: break
     conString=''+fieldValues[3]+'/' + fieldValues[4] +'@'+fieldValues[0]+':'+fieldValues[1]+'/'+fieldValues[2]
     if errmsg == "":
       try:
-        print(3)
         connection = cx_Oracle.connect(conString)
-        print(4)
         return connection # no problems found
       except cx_Oracle.DatabaseError as exc:
-        ui.exceptionbox()
+        ui.msgbox(exc.args[0],"Error")
   
 
 if __name__ == "__main__":
     connection = dbLogin()
-    print(connection)
-    # createTable()
+    if connection:
+      pass
+    else:
+      sys.exit(0)
+
+    createTable(connection)
+    connection.close()
