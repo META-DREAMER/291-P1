@@ -50,17 +50,18 @@ def createTable(connection):
     
 def dbLogin():
   msg = "Enter Oracle Connection Information"
-  title = "Conenct to Oracle"
+  title = "Connect to Oracle"
   fieldNames = ["Host", "Port", "SID","Username", "Password"]
   fieldValues = ["localhost", "1525", "crs","jutt", "ps3hammad"]
+  errmsg = ""
 
   while 1:
+    fieldValues = ui.multpasswordbox(errmsg, title, fieldNames, fieldValues)
+    if fieldValues == None: break
     errmsg = ""
     for i in range(len(fieldNames)):
       if fieldValues[i].strip() == "":
         errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-    fieldValues = ui.multpasswordbox(errmsg, title, fieldNames, fieldValues)
-    if fieldValues == None: break
     conString=''+fieldValues[3]+'/' + fieldValues[4] +'@'+fieldValues[0]+':'+fieldValues[1]+'/'+fieldValues[2]
     if errmsg == "":
       try:
@@ -69,17 +70,60 @@ def dbLogin():
       except cx_Oracle.DatabaseError as exc:
         ui.msgbox(exc.args[0],"Error")
   
-def logRegPrompt():
-  choice = ui.indexbox("Welcome to Flight Finder", "Login/Register",['Login', 'Register','Exit'])
+def loginRegister(connection):
+  lMsg = "Login to Flight Finder"
+  lTitle = "Login"
+  rMsg = "Register for Flight Finder"
+  rTitle = "Register"
+  fieldNames = ["Email", "Password"]
+  
 
-  if choice == 0:
-    print("login")
-    #login
-  elif choice == 1:
-    print("register")
-  else:
-    #register
-    sys.exit(0)
+  while 1:
+
+    fieldValues = []
+    choice = ui.indexbox("Welcome to Flight Finder", "Login/Register",['Login', 'Register','Exit'])
+
+    if choice == 0:
+      #login
+      errmsg = lMsg
+      while 1:
+        fieldValues = ui.multpasswordbox(errmsg, lTitle, fieldNames, fieldValues)
+        if fieldValues == None: break
+        errmsg = ""
+        for i in range(len(fieldNames)):
+          if fieldValues[i].strip() == "":
+            errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
+        email = fieldValues[0]
+        pwd = fieldValues[1]
+        if errmsg == "":
+          try:
+            #Check that user is in database and password is correct
+            return email
+          except cx_Oracle.DatabaseError as exc:
+            ui.msgbox(exc.args[0],"Error")
+      continue
+    elif choice == 1:
+      #register
+      errmsg = rMsg
+      while 1:
+        fieldValues = ui.multpasswordbox(errmsg, rTitle, fieldNames, fieldValues)
+        if fieldValues == None: break
+        errmsg = ""
+        for i in range(len(fieldNames)):
+          if fieldValues[i].strip() == "":
+            errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
+        email = fieldValues[0]
+        pwd = fieldValues[1]
+        if errmsg == "":
+          try:
+            #Check that user is not in database and password is 4 char
+            return email
+          except cx_Oracle.DatabaseError as exc:
+            ui.msgbox(exc.args[0],"Error")
+      continue
+    else:
+      #exit
+      sys.exit(0)
 
 
 if __name__ == "__main__":
@@ -89,9 +133,7 @@ if __name__ == "__main__":
   else:
     sys.exit(0)
 
+  createTable(connection)
+  print(loginRegister(connection))
 
-
-
-
-    createTable(connection)
-    connection.close()
+  connection.close()
