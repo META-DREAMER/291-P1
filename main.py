@@ -69,13 +69,29 @@ def dbLogin():
       except cx_Oracle.DatabaseError as exc:
         ui.msgbox(exc.args[0],"Error")
   
+def logRegPrompt():
+  choice = ui.indexbox("Welcome to Flight Finder", "Login/Register",['Login', 'Register','Exit'])
+
+  if choice == 0:
+    print("login")
+    #login
+  elif choice == 1:
+    print("register")
+  else:
+    #register
+    sys.exit(0)
+
 
 if __name__ == "__main__":
-    connection = dbLogin()
-    if connection:
-      pass
-    else:
-      sys.exit(0)
+  connection = dbLogin()
+  if connection:
+    pass
+  else:
+    sys.exit(0)
+
+
+
+
 
     createTable(connection)
     connection.close()
