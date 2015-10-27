@@ -18,6 +18,14 @@ def main_screen(user):
     else:
         sys.exit(0)
 
+def print_table(table):
+    string = ""
+    col_width = [max(len(str(x)) for x in col) for col in zip(*table)]
+    for line in table:
+        string += "| " + " | ".join("{:{}}".format(x, col_width[i])
+                                for i, x in enumerate(line)) + " |\n"
+    return string
+
 def search_screen(user):
     fieldNames = ["From", "Destination", "Departure Date (DD-MM-YYYY)"]
     query = formPrompt("Search for Flights (Max Two Connections)", "FlightFinder", fieldNames, 0)
@@ -45,22 +53,42 @@ def search_screen(user):
         num_stops= 1
 
     if ui.boolbox("Order by connections?", "FlightFinder", default_choice='No'):
-        order_by = "price"
-    else:
         order_by = "stops, price"
+    else:
+        order_by = "price"
 
     with open('sql/get_flights.sql') as file:
         get_flights = file.read().replace('\n', ' ')
 
     flights = user._db.query(get_flights.format(src,dest,num_stops,date,order_by))
+    flight_list = {}
+
+    result_str = ""
+
 
     if flights:
-        ui.choicebox("Available Flights. Select one and click OK to Make a Booking", "FlightFinder", flights)
+        for f in flights:
+
+
+            result="Row Num = {0}, FNO1 = {1}, FNO2 = {2}, FNO3 = {3}, Dep Date 1 = {4}, Dep Date 2 = {5}, Dep Date 3 = {6}, " \
+                   "From = {7}, To = {8}, Dep Time = {9}, Arr Time = {10}, Num Stops = {11}, Layover 1 = {12}, Layover 2 = {13}, " \
+                   "Price = {14}, Seat 1 = {15}, Fare 1 = {16}, Seat 2 = {17}, Fare 2 = {18}, " \
+                   "Seat 3 = {19}, Fare 3 = {20}".format(f[0],f[1],f[2],f[3],f[4].strftime("%d-%b-%Y"),f[5].strftime("%d-%b-%Y"),f[6].strftime("%d-%b-%Y"),
+                                                         f[7],f[8],f[9].strftime("%H:%M"),f[10].strftime("%H:%M"),f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20])
+            # result = result.format(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20],f[21])
+            flight_list[result2] = f[0]
+            result_str += result2 + '\n'
+
+
+        ta  = print_table(flights)
+        ui.codebox("Available Flights. Select one and click OK to Make a Booking", "FlightFinder", ta)
     else:
         ui.msgbox("No Flights Found From {} to {} on {}".format(src,dest,date), "Error")
 
 
     search_screen(user)
+
+
 
 
 

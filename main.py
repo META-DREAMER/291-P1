@@ -9,10 +9,10 @@ if __name__ == "__main__":
     else:
         sys.exit(0)
 
-    execute_file(db, "sql/available_flights.sql")
-    execute_file(db, "sql/good_connections.sql")
-    execute_file(db, "sql/good_three_connections.sql")
-    execute_file(db, "sql/good_flights.sql")
+    execute_file(db, "sql/1.sql")
+    execute_file(db, "sql/2.sql")
+    execute_file(db, "sql/3.sql")
+    execute_file(db, "sql/4.sql")
 
     splash_screen(db)
 
