@@ -1,5 +1,5 @@
 import cx_Oracle
-import gui.easygui as ui
+from utils import *
 
 class DB:
     def __init__(self):
@@ -25,20 +25,20 @@ class DB:
             self._connection = None
             self._curs = None
 
-    def execute(self, query):
+    def query(self, statement):
         if self._connection is not None and self._curs is not None:
             try:
-                if self._curs.execute(query):
+                if self._curs.execute(statement):
                     return self._curs.fetchall()
-                return []
             except cx_Oracle.DatabaseError as exc:
                 ui.msgbox(exc.args[0], "Error")
-                return False
+                return None
+            return []
 
-    def commit(self, query):
+    def execute(self, statement):
         if self._connection is not None:
-            self.execute(query)
+            result = self.query(statement)
             self._connection.commit()
+            return result
 
-    def __del__(self):
-        self.close()
+
