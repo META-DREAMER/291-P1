@@ -61,26 +61,27 @@ def search_screen(user):
         get_flights = file.read().replace('\n', ' ')
 
     flights = user._db.query(get_flights.format(src,dest,num_stops,date,order_by))
-    flight_list = {}
+    flight_list = []
+    flight_list.append(["Result Num", "Flight No.1", "Flight No.2", ])
 
-    result_str = ""
+    result_str = []
 
 
     if flights:
-        # for f in flights:
-        #
-        #     result="Row Num = {0}, FNO1 = {1}, FNO2 = {2}, FNO3 = {3}, Dep Date 1 = {4}, Dep Date 2 = {5}, Dep Date 3 = {6}, " \
-        #            "From = {7}, To = {8}, Dep Time = {9}, Arr Time = {10}, Num Stops = {11}, Layover 1 = {12}, Layover 2 = {13}, " \
-        #            "Price = {14}, Seat 1 = {15}, Fare 1 = {16}, Seat 2 = {17}, Fare 2 = {18}, " \
-        #            "Seat 3 = {19}, Fare 3 = {20}".format(f[0],f[1],f[2],f[3],f[4].strftime("%d-%b-%Y"),f[5].strftime("%d-%b-%Y"),f[6].strftime("%d-%b-%Y"),
-        #                                                  f[7],f[8],f[9].strftime("%H:%M"),f[10].strftime("%H:%M"),f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20])
-        #     # result = result.format(f[0],f[1],f[2],f[3],f[4],f[5],f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20],f[21])
-        #     flight_list[result2] = f[0]
-        #     result_str += result2 + '\n'
+        for i, f in enumerate(flights):
+
+            # result="Row Num = {0}, FNO1 = {1}, FNO2 = {2}, FNO3 = {3}, Dep Date 1 = {4}, Dep Date 2 = {5}, Dep Date 3 = {6}, " \
+            #        "From = {7}, To = {8}, Dep Time = {9}, Arr Time = {10}, Num Stops = {11}, Layover 1 = {12}, Layover 2 = {13}, " \
+            #        "Price = {14}, Seat 1 = {15}, Fare 1 = {16}, Seat 2 = {17}, Fare 2 = {18}, " \
+            #        "Seat 3 = {19}, Fare 3 = {20}".format(f[0],f[1],f[2],f[3],f[4].strftime("%d-%b-%Y"),f[5].strftime("%d-%b-%Y"),f[6].strftime("%d-%b-%Y"),
+            #                                              f[7],f[8],f[9].strftime("%H:%M"),f[10].strftime("%H:%M"),f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20])
+            # result = result.format(f[0],f[1],f[2],f[3].strftime("%d-%b-%Y"),f[4].strftime("%H:%M"),f[5].strftime("%H:%M"),f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16])
+            flight_list.append([i,f[0],f[1],f[2],f[3].strftime("%d-%b-%Y"),f[4].strftime("%H:%M"),f[5].strftime("%H:%M"),f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16]])
+            # result_str += result + '\n'
 
 
-        ta  = print_table(flights)
-        ui.codebox("Available Flights. Select one and click OK to Make a Booking", "FlightFinder", ta)
+        ta  = print_table(flight_list)
+        ui.codebox("Available Flights. Pick a ResultNum to ", "FlightFinder", ta)
     else:
         ui.msgbox("No Flights Found From {} to {} on {}".format(src,dest,date), "Error")
 
