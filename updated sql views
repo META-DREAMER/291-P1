@@ -1,6 +1,19 @@
-create or replace view available_flights(flightno,dep_date,src,dst,dep_time,arr_time,fare,seats,price) as 
-  select fl.flightno, sf.dep_date, fl.src, fl.dst, fl.dep_time+(trunc(sf.dep_date)-trunc(fl.dep_time)), 
-  fl.dep_time+(trunc(sf.dep_date)-trunc(fl.dep_time))+((fl.est_dur/60+a2.tzone-a1.tzone)/24), 
+select * from (
+select rownum,src,dst,dep_date,dep_time,arr_time,flightno1,flightno2,flightno3,layover1,layover2,fare1,fare2,fare3,price,seats
+from (select * from (two_good_connections))
+union all
+select rownum,src,dst,dep_date,dep_time,arr_time,flightno1,flightno2,NULL as flightno3,layover as layover1,NULL as layover2, fare1,fare2, NULL as fare3, price,seats
+from (select * from (good_connections))
+union all
+select rownum,src,dst,dep_date,dep_time,arr_time,flightno as flightno1,NULL as flightno2,NULL as flightno3,NULL as layover1,NULL as layover2,fare as fare1,NULL as fare2,NULL as fare3,price,seats
+from (select * from (available_flights)))
+where LOWER(src)=LOWER('yrl') and LOWER(dst)=LOWER('lax') and stops<=2 and lower(to_char(dep_time, 'DD-MM-YYYY')) = LOWER('02-09-2015') order by price;
+
+-- AF
+
+create or replace view available_flights(flightno,dep_date,src,dst,dep_time,arr_time,fare,seats,price) as
+  select fl.flightno, sf.dep_date, fl.src, fl.dst, fl.dep_time+(trunc(sf.dep_date)-trunc(fl.dep_time)),
+  fl.dep_time+(trunc(sf.dep_date)-trunc(fl.dep_time))+((fl.est_dur/60+a2.tzone-a1.tzone)/24),
   fa.fare, fa.limit-count(tno), fa.price
   from flights fl, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2
   where fl.flightno=sf.flightno and fl.flightno=fa.flightno and fl.src=a1.acode and
@@ -10,26 +23,18 @@ create or replace view available_flights(flightno,dep_date,src,dst,dep_time,arr_
 	a1.tzone, fa.fare, fa.limit, fa.price
   having fa.limit-count(tno) > 0;
   
-create or replace view good_connections (src,dst,dep_date,flightno1,flightno2,layover,price,seats,fare1,fare2) as
-  select a1.src,a2.dst,a1.dep_date,a1.flightno,a2.flightno,a2.dep_time-a1.arr_time,min(a1.price+a2.price),least(a1.seats,a2.seats),a1.fare,a2.fare
+  --GC
+  create or replace view good_connections (src,dst,dep_date,dep_time,arr_time,flightno1,flightno2,layover,price,seats,fare1,fare2) as
+  select a1.src,a2.dst,a1.dep_date,a1.dep_time, a2.arr_time, a1.flightno,a2.flightno,a2.dep_time-a1.arr_time,min(a1.price+a2.price),least(a1.seats,a2.seats),a1.fare,a2.fare
   from available_flights a1, available_flights a2
   where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time
-  group by a1.src,a2.dst,a1.dep_date,a1.flightno,a2.flightno,a2.dep_time,a1.arr_time,a1.seats,a2.seats,a1.fare,a2.fare;
+  group by a1.src,a2.dst,a1.dep_date,a1.dep_time, a2.arr_time,a1.flightno,a2.flightno,a2.dep_time,a1.arr_time,a1.seats,a2.seats,a1.fare,a2.fare;
   
-create or replace view two_good_connections (src,dst,dep_date,flightno1,flightno2,flightno3,layover1,layover2,fare1,fare2,fare3,price,seats) as
-  select a1.src,a3.dst,a1.dep_date,a1.flightno,a2.flightno,a3.flightno,a2.dep_time-a1.arr_time,a3.dep_time-a2.arr_time,a1.fare,a2.fare,a3.fare,min(a1.price+a2.price+a3.price),least(a1.seats,a2.seats,a3.seats)
+  --g2c
+  create or replace view two_good_connections (src,dst,dep_date,dep_time,arr_time,flightno1,flightno2,flightno3,layover1,layover2,fare1,fare2,fare3,price,seats) as
+  select a1.src,a3.dst,a1.dep_date,a1.dep_time, a3.arr_time,a1.flightno,a2.flightno,a3.flightno,a2.dep_time-a1.arr_time,a3.dep_time-a2.arr_time,a1.fare,a2.fare,a3.fare,min(a1.price+a2.price+a3.price),least(a1.seats,a2.seats,a3.seats)
   from available_flights a1, available_flights a2, available_flights a3
   where a1.dst=a2.src and a2.dst=a3.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time
   and a2.arr_time +1.5/24 <=a3.dep_time and a2.arr_time +5/24 >=a3.dep_time
-  group by a1.src,a3.dst,a1.dep_date,a1.flightno,a2.flightno,a3.flightno,a2.dep_time,a1.arr_time,a3.dep_time,a2.arr_time,a1.fare,a2.fare,a3.fare,a1.seats,a2.seats,a3.seats;
+  group by a1.src,a3.dst,a1.dep_date,a1.dep_time, a3.arr_time,a1.flightno,a2.flightno,a3.flightno,a2.dep_time,a1.arr_time,a3.dep_time,a2.arr_time,a1.fare,a2.fare,a3.fare,a1.seats,a2.seats,a3.seats;
   
-select * from (
-select rownum,src,dst,dep_date,flightno1,flightno2,flightno3,layover1,layover2,fare1,fare2,fare3,price,seats
-from (select * from (two_good_connections))
-union
-select rownum,src,dst,dep_date,flightno1,flightno2,layover1,fare1,fare2,price,seats
-from (select * from (good_connections))
-union
-select rownum,src,dst,dep_date,flightno1,fare1,price,seats
-from (select * from (available_flights)))
-where src='{}' and dst='{}' and stops<='{}' and lower(to_char(dep_time, 'DD-MM-YYYY')) = '{}' order by {});

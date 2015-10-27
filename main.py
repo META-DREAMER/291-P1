@@ -9,10 +9,13 @@ if __name__ == "__main__":
     else:
         sys.exit(0)
 
-    execute_file(db, "sql/1.sql")
-    execute_file(db, "sql/2.sql")
-    execute_file(db, "sql/3.sql")
-    execute_file(db, "sql/4.sql")
+    # execute_file(db, "sql/1.sql")
+    # execute_file(db, "sql/2.sql")
+    # execute_file(db, "sql/3.sql")
+    # execute_file(db, "sql/4.sql")
+    execute_file(db, "sql/5.sql")
+    execute_file(db, "sql/6.sql")
+    execute_file(db, "sql/7.sql")
 
     splash_screen(db)
 
