@@ -23,3 +23,13 @@ create or replace view two_good_connections (src,dst,dep_date,flightno1,flightno
   and a2.arr_time +1.5/24 <=a3.dep_time and a2.arr_time +5/24 >=a3.dep_time
   group by a1.src,a3.dst,a1.dep_date,a1.flightno,a2.flightno,a3.flightno,a2.dep_time,a1.arr_time,a3.dep_time,a2.arr_time,a1.fare,a2.fare,a3.fare,a1.seats,a2.seats,a3.seats;
   
+select * from (
+select rownum,src,dst,dep_date,flightno1,flightno2,flightno3,layover1,layover2,fare1,fare2,fare3,price,seats
+from (select * from (two_good_connections))
+union
+select rownum,src,dst,dep_date,flightno1,flightno2,layover1,fare1,fare2,price,seats
+from (select * from (good_connections))
+union
+select rownum,src,dst,dep_date,flightno1,fare1,price,seats
+from (select * from (available_flights)))
+where src='{}' and dst='{}' and stops<='{}' and lower(to_char(dep_time, 'DD-MM-YYYY')) = '{}' order by {});
