@@ -5,7 +5,7 @@ from user import *
 
 
 def main_screen(user):
-    options = {'Search for Flights': search_screen, 'Make a Booking': make_booking_screen,
+    options = {'Search for Flights': search_screen,
                'List Existing Bookings': bookings_screen, "Logout": logout_screen}
 
     if user._is_agent:
@@ -62,33 +62,21 @@ def search_screen(user):
 
     flights = user._db.query(get_flights.format(src,dest,num_stops,date,order_by))
     flight_list = []
-    flight_list.append(["Result Num", "Flight No.1", "Flight No.2", ])
-
-    result_str = []
+    flight_list.append(["Result Num", "Source", "Destination", "Dep Date","Dep Time","Arrival Time","Num Stops",
+                        "Flight No.1", "Flight No.2", "FLight No.3", "Layover1", "Layover2", "Fare 1","Fare 2","Fare 3", "Price", "Seats"])
 
 
     if flights:
         for i, f in enumerate(flights):
-
-            # result="Row Num = {0}, FNO1 = {1}, FNO2 = {2}, FNO3 = {3}, Dep Date 1 = {4}, Dep Date 2 = {5}, Dep Date 3 = {6}, " \
-            #        "From = {7}, To = {8}, Dep Time = {9}, Arr Time = {10}, Num Stops = {11}, Layover 1 = {12}, Layover 2 = {13}, " \
-            #        "Price = {14}, Seat 1 = {15}, Fare 1 = {16}, Seat 2 = {17}, Fare 2 = {18}, " \
-            #        "Seat 3 = {19}, Fare 3 = {20}".format(f[0],f[1],f[2],f[3],f[4].strftime("%d-%b-%Y"),f[5].strftime("%d-%b-%Y"),f[6].strftime("%d-%b-%Y"),
-            #                                              f[7],f[8],f[9].strftime("%H:%M"),f[10].strftime("%H:%M"),f[11],f[12],f[13],f[14],f[15],f[16],f[17],f[18],f[19],f[20])
-            # result = result.format(f[0],f[1],f[2],f[3].strftime("%d-%b-%Y"),f[4].strftime("%H:%M"),f[5].strftime("%H:%M"),f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16])
-            flight_list.append([i,f[0],f[1],f[2],f[3].strftime("%d-%b-%Y"),f[4].strftime("%H:%M"),f[5].strftime("%H:%M"),f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16]])
-            # result_str += result + '\n'
-
+            flight_list.append([i,f[1],f[2],f[3].strftime("%d-%b-%Y"),f[4].strftime("%H:%M"),f[5].strftime("%H:%M"),f[6],f[7],f[8],f[9],f[10],f[11],f[12],f[13],f[14],f[15],f[16]])
 
         ta  = print_table(flight_list)
-        ui.codebox("Available Flights. Pick a ResultNum to ", "FlightFinder", ta)
+        ui.codebox("Available Flights. Enter a ResultNum on the next screen to book it. Click OK.", "FlightFinder", ta)
     else:
         ui.msgbox("No Flights Found From {} to {} on {}".format(src,dest,date), "Error")
 
 
     search_screen(user)
-
-
 
 
 
@@ -146,12 +134,41 @@ def make_booking_screen(user):
     main_screen(user)
 
 def r_dept_screen(user):
-    ui.msgbox("Record Departure")
+    result = formPrompt("Enter a flight no and depDate (DD-MM-YYYY)","Record Dep", ["FlightNo", "Dep Date"],0)
+    if result is None:
+        main_screen(user)
+
+    if not date_valid(result[1]):
+        ui.msgbox( "Incorrect data format, should be DD-MM-YYYY", "Error")
+        search_screen(user)
+
+    fno = result[0]
+    date = result[1]
+
+    user._db.execute("UPDATE SCH_FLIGHTS SET act_dep_time = TO_DATE('{}', 'DD-MM-YYYY') WHERE flightno = '{}' AND dep_date = TO_DATE('{}', 'DD-MM-YYYY')".format(datetime.datetime.now().strftime("%d-%b-%Y"), fno, date))
+
+    ui.msgbox("Departure Recorded")
+
     main_screen(user)
 
 def r_arr_screen(user):
-    ui.msgbox("Record Arrival")
+    result = formPrompt("Enter a flight no and depDate (DD-MM-YYYY)","Record Dep", ["FlightNo", "Dep Date"],0)
+    if result is None:
+        main_screen(user)
+
+    if not date_valid(result[1]):
+        ui.msgbox( "Incorrect data format, should be DD-MM-YYYY", "Error")
+        search_screen(user)
+
+    fno = result[0]
+    date = result[1]
+
+    user._db.execute("UPDATE SCH_FLIGHTS SET act_arr_time = TO_DATE('{}', 'DD-MM-YYYY') WHERE flightno = '{}' AND dep_date = TO_DATE('{}', 'DD-MM-YYYY')".format(datetime.datetime.now().strftime("%d-%b-%Y"), fno, date))
+
+    ui.msgbox("Arrival Recorded")
+
     main_screen(user)
+
 
 
 def logout_screen(user):
